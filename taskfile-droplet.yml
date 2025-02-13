@@ -1,0 +1,109 @@
+# Tasks related to DO droplet management specifically
+
+version: "3"
+
+tasks:
+  create-new:
+    desc: "Create a new DO droplet and initialize it"
+    requires:
+      vars: [NEW_DROPLET_NAME]
+    vars:
+      SIZE: '{{.SIZE | default "s-1vcpu-512mb-10gb"}}'
+      IMAGE: '{{.IMAGE | default "ubuntu-24-04-x64"}}'
+      REGION: '{{.REGION | default "sfo3"}}'
+      SSH_KEY_NAME: '{{.SSH_KEY_NAME | default "tim-linux"}}'
+      PROJECT: '{{.PROJECT | default "Personal"}}'
+    preconditions:
+      - sh: doctl compute size list | grep -q {{.SIZE}}
+        msg: "Size '{{.SIZE}}' does not exist -- check doctl compute size list"
+      - sh: doctl compute image list-distribution | grep -q {{.IMAGE}}
+        msg: "Image '{{.IMAGE}}' does not exist -- check doctl compute image list-distribution"
+      - sh: doctl compute region list | grep -q {{.REGION}}
+        msg: "Region '{{.REGION}}' does not exist -- check doctl compute region list"
+      - sh: doctl compute ssh-key list | grep -q {{.SSH_KEY_NAME}}
+        msg: "SSH key '{{.SSH_KEY_NAME}}' does not exist -- check doctl compute ssh-key list"
+      - sh: doctl projects list | grep -q {{.PROJECT}}
+        msg: "Project '{{.PROJECT}}' does not exist -- check doctl projects list"
+      - sh: doctl compute droplet list | grep -q {{.NEW_DROPLET_NAME}} && exit 1 || exit 0
+        msg: "Droplet '{{.NEW_DROPLET_NAME}}' already exists -- choose a different name"
+    cmds:
+      - bash scripts/create-droplet.sh {{.NEW_DROPLET_NAME}} {{.SIZE}} {{.IMAGE}} {{.REGION}} {{.SSH_KEY_NAME}} {{.PROJECT}}
+      - echo "Droplet '{{.NEW_DROPLET_NAME}}' created successfully -- waiting a few seconds for initial boot"
+      - sleep 10
+      - task: setup-new
+        vars:
+          DROPLET_NAME: "{{.NEW_DROPLET_NAME}}"
+
+  setup-new:
+    desc: "Perform initial setup of a new DO droplet. setting user permissions etc."
+    requires:
+      vars: [DROPLET_NAME]
+    cmds:
+      # Set up the droplet by running script there (if this failes, likely that droplet is already set up and blocking root login)
+      # Note: This one can't use the shorthand `ssh {{.DROPLET_NAME}} ...` because this task sets that up
+      - doctl compute ssh {{ .DROPLET_NAME }} --ssh-key-path ~/.ssh/id_ed25519 --ssh-user root --ssh-command "bash -s " < scripts/setup-droplet-security.sh
+
+      # Add an ssh alias for the droplet in ~/.ssh/config
+      - scripts/update-ssh-config.sh {{.DROPLET_NAME}}
+
+      # Set up the droplet with some basic configuration
+      - task: setup-config
+        vars:
+          DROPLET_NAME: "{{.DROPLET_NAME}}"
+
+      # Install some useful tools
+      - task: setup-docker
+        vars:
+          DROPLET_NAME: "{{.DROPLET_NAME}}"
+
+  setup-config:
+    desc: "Set up various other configuration tasks on a droplet"
+    requires:
+      vars: [DROPLET_NAME]
+    cmds:
+      - ssh {{ .DROPLET_NAME }} < scripts/setup-droplet-config.sh
+
+  setup-docker:
+    desc: "Set up docker on a droplet"
+    requires:
+      vars: [DROPLET_NAME]
+    cmds:
+      - ssh {{.DROPLET_NAME}} < scripts/setup-docker.sh
+
+  setup-webserver:
+    desc: "One-time setup to make the droplet a webserver"
+    requires:
+      vars: [DROPLET_NAME]
+    cmds:
+      - scripts/send-webserver-config.sh {{.DROPLET_NAME}}
+      - ssh {{.DROPLET_NAME}} < scripts/setup-webserver.sh
+      # Move the update static files to webserver for convenience in e.g. GHA scripts
+      - scp scripts/webserver-update-static-files.sh {{.DROPLET_NAME}}:~/scripts/webserver-update-static-files.sh
+      - |
+        echo 'Note: If the compose.yaml file includes backend services, it may be necessary to log in to the docker registry first.
+
+        Do so by
+        ssh {{.DROPLET_NAME}} "echo $GH_PAT | docker login ghcr.io -u <username> --password-stdin"
+        Where GH_PAT is a classic personal access token with read:packages scope'
+      - |
+        echo "Note: To add ssh keys (e.g. for GHA workflows) use the task `droplet:add-ssh-key`"
+
+  add-ssh-key:
+    desc: |
+      Generate a new SSH key pair, add the public key to known hosts on the droplet, and copy the private key to clipboard.
+      Useful for setting up ssh keys on github actions etc.
+
+    requires:
+      vars: [DROPLET_NAME]
+    vars:
+      DROPLET_NAME: '{{default "webserver" .DROPLET_NAME}}'
+    cmds:
+      # Generate a new SSH key pair without a passphrase
+      - ssh-keygen -f /tmp/temp_ssh_key -N ""
+      - defer: rm /tmp/temp_ssh_key /tmp/temp_ssh_key.pub
+
+      - ssh {{ .DROPLET_NAME }} "echo $(cat /tmp/temp_ssh_key.pub) >> ~/.ssh/authorized_keys"
+      # Copy the private key to the clipboard
+      - xsel --clipboard < /tmp/temp_ssh_key
+      # Print the private key to the console (for manual copying)
+      - cat /tmp/temp_ssh_key

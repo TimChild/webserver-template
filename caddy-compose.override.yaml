@@ -1,0 +1,11 @@
+# Used when testing locally
+
+services:
+  caddy:
+    # Override external port because linux doesn't allow non-root to bind to low ports
+    ports: !override
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      - ./local-sites-enabled:/etc/caddy/sites-enabled
+      # - <path/to/static/files>:/srv/www/<site_name>

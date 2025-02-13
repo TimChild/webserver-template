@@ -1,0 +1,21 @@
+# Variables are: DOMAIN, SITE_NAME, BACKEND_SERVICE
+
+http://${DOMAIN} http://www.${DOMAIN} www.${DOMAIN} {
+	redir https://${DOMAIN}{uri}
+}
+
+${DOMAIN} {
+	encode gzip
+
+	@backend_routes path /_event/* /ping /_upload /_upload/*
+	handle @backend_routes {
+		reverse_proxy ${BACKEND_SERVICE}:8000
+	}
+
+	root * /srv/www/${SITE_NAME}
+	route {
+		try_files {path} {path}/ /404.html
+		file_server
+	}
+}
+

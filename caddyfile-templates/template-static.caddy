@@ -1,0 +1,8 @@
+# Variables are: DOMAIN, SITE_NAME
+
+${DOMAIN} {
+	encode gzip
+
+	root * /srv/www/${SITE_NAME}
+	file_server
+}

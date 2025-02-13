@@ -1,0 +1,31 @@
+# This is the compose file the Caddy container will use
+
+services:
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./sites-enabled:/etc/caddy/sites-enabled
+      - /srv:/srv
+      - caddy_data:/data
+      - caddy_config:/config
+
+  redis:
+    # Single redis instance for all reflex (or other) sites to share...
+    image: redis:7.4
+
+  ## Add backend services here
+  # <site-name>-backend:
+  #   image: ghcr.io/<username>/<site-name>-backend:latest
+  #   container_name: <site-name>_backend
+  #   restart: unless-stopped
+  #   env_file: "sites/<site-name>/.env"
+
+volumes:
+  caddy_data:
+  caddy_config:

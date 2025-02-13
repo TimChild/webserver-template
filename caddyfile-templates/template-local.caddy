@@ -1,0 +1,9 @@
+# Variables are: STATIC_PATH
+
+# Can't use `localhost` on linux because port `:80` not allowed to be used
+
+:9001 {
+	root * ${STATIC_PATH}
+	file_server
+}
+

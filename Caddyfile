@@ -1,0 +1,14 @@
+# This acts as the main caddy config and imports any additional configs 
+# per site from the sites-enabled directory at the same level as the caddyfile
+
+# Any global config could go here
+
+## Uncomment the following to use the Let's Encrypt staging server (avoid rate limits when initially setting things up)
+# {
+#     # Use the staging letencrypt server instead
+#     acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+# }
+
+# Import all additional configs from sites-enabled
+import sites-enabled/*.caddy
+
