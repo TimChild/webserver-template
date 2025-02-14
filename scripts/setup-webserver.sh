@@ -13,6 +13,12 @@ function heading() {
     echo "-------"
 }
 
+function warning() {
+    echo "-------"
+    printf "\033[1;33m WARNING: %s \033[0m \n" "$1"
+    echo "-------"
+}
+
 set -e
 
 heading "Setting up droplet as a webserver..."
@@ -42,12 +48,12 @@ sudo ufw allow https
 # Create a www directory within `/srv`
 sudo mkdir -p /srv/www
 
-# Start Caddy using docker-compose
-ln -s caddy-compose.yaml compose.yaml
-docker compose up -d
-
 # Create scripts directory (separately send the webserver-update-static-files.sh script)
 mkdir -p ~/scripts
+
+# Start Caddy using docker-compose
+ln -s caddy-compose.yaml compose.yaml
+docker compose up -d || warning "Failed to start docker-compose... Start manually (e.g. may need to log in to docker registry first)"
 
 heading "Webserver setup complete (Caddy is running)"
 
