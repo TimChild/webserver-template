@@ -11,8 +11,7 @@ tasks:
       SIZE: '{{default "s-1vcpu-512mb-10gb" .SIZE}}'
       IMAGE: '{{default "ubuntu-24-04-x64" .IMAGE}}'
       REGION: '{{default "sfo3" .REGION}}'
-      SSH_KEY_NAME: "{{.SSH_KEY_NAME}}" # add your own default for easier use
-      PROJECT: "{{.PROJECT}}" # add your own default for easier use
+      # add defaults for SSH_KEY_NAME and PROJECT for easier use
     preconditions:
       - sh: doctl compute size list | grep -q {{.SIZE}}
         msg: "Size '{{.SIZE}}' does not exist -- check doctl compute size list"
