@@ -84,6 +84,35 @@ tasks:
         vars:
           SSH_NAME: "{{.SSH_NAME}}"
 
+  deploy-docker-backend:
+    desc: "Deploy a backend docker image to the webserver"
+    summary: |
+      Build and push a backend docker image to the webserver droplet.
+      Vars:
+        - SSH_NAME: The name of the droplet to deploy to
+        - SITE_NAME: The name of the site to deploy
+        - USERNAME: The username for the docker registry
+        - optional REGISTRY: The docker registry to use (default ghcr.io)
+        - optional DOCKERFILE_PATH: The path to the Dockerfile (default Dockerfile)
+        - optional PROJECT_DIR: The root directory for the site (default user working directory)
+    requires:
+      vars: [SSH_NAME, SITE_NAME, USERNAME]
+    vars:
+      REGISTRY: '{{default "ghcr.io" .REGISTRY}}'
+      USERNAME: '{{default "<set default here>" .USERNAME}}'
+      DOCKERFILE_PATH: '{{default "Dockerfile" .DOCKERFILE_PATH}}'
+      PROJECT_DIR: "{{default .USER_WORKING_DIR .PROJECT_DIR}}"
+      _FULL_DOCKERFILE_PATH: "{{.PROJECT_DIR}}/{{.DOCKERFILE_PATH}}"
+      _FULL_REGISTRY_PATH: "{{.REGISTRY}}/{{.USERNAME}}/{{.SITE_NAME}}-backend:latest"
+    cmds:
+      - |
+        echo "Deploying backend docker image to server at {{.SSH_NAME}}:sites/{{.SITE_NAME}}"
+      - docker build -t {{._FULL_REGISTRY_PATH}} -f {{._FULL_DOCKERFILE_PATH}} {{.PROJECT_DIR}}
+      - docker push {{._FULL_REGISTRY_PATH}} || echo "Make sure you are logged in with write permissions (e.g. `echo $GH_PAT | docker login -u <username> ghcr.io --password-stdin`)"
+      - task: caddy-reload
+        vars:
+          SSH_NAME: "{{.SSH_NAME}}"
+
   caddy-reload:
     desc: "Reload the Caddy webserver after sending any configuration changes"
     requires:
