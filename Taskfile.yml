@@ -68,13 +68,13 @@ tasks:
     vars:
       SSH_NAME: '{{default "webserver" .SSH_NAME}}'
       STATIC_DIR: '{{default "static" .STATIC_DIR}}'
-      ROOT_DIR: "{{default .USER_WORKING_DIR .ROOT_DIR}}"
-      _FULL_DIR: "{{.ROOT_DIR}}/{{.STATIC_DIR}}/"
+      PROJECT_DIR: "{{default .USER_WORKING_DIR .PROJECT_DIR}}"
+      _FULL_DIR: "{{.PROJECT_DIR}}/{{.STATIC_DIR}}/"
     preconditions:
       - sh: test -d "{{._FULL_DIR}}"
         msg: |
           Directory "{{._FULL_DIR}}" does not exist (maybe need to change the STATIC_DIR variable? 
-          (or run from different dir or explicitly set ROOT_DIR))
+          (or run from different dir or explicitly set PROJECT_DIR))
     cmds:
       - |
         echo "Deploying static files from {{._FULL_DIR}} to server at {{.SSH_NAME}}:srv/www/{{.SITE_NAME}}"
