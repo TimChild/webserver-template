@@ -134,7 +134,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           source: .env
-          target: ${{ vars.PROJECT_DIR }}
+          target: sites/${{ vars.SITE_NAME }}
           overwrite: true
 
       - name: Set .env permissions
@@ -144,7 +144,7 @@ jobs:
           username: webadmin
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            chmod 600 ${{ vars.PROJECT_DIR }}/.env
+            chmod 600 sites/${{ vars.SITE_NAME }}/.env
 
       - name: Pull new backend image on server and restart updated container
         uses: appleboy/ssh-action@v1.2.0
