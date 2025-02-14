@@ -23,7 +23,7 @@ function warning() {
 
 set -e
 
-site_name=$2
+site_name=$1
 
 if [ -z "$site_name" ]; then
     echo "Usage: remove-webserver-static-site.sh <site_name>"
