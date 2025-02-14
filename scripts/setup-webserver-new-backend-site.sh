@@ -55,6 +55,16 @@ else
     scp sites-enabled/$site_name.caddy $ssh_name:~/sites-enabled/
 fi
 
+echo "Adding a backend service to the docker-compose file..."
+cat <<EOF >> caddy-compose.yaml
+  $_backend_service_name:
+    image: $backend_image
+    container_name: $_backend_service_name
+    restart: unless-stopped
+    env_file: "sites/$site_name/.env"
+
+EOF
+
 echo "Creating directories on the webserver..."
 ssh $ssh_name "rm -rf ~/sites/$site_name && mkdir -p ~/sites/$site_name/static"
 ssh $ssh_name "sudo mkdir -p /srv/www/$site_name"
