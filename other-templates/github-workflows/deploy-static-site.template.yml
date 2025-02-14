@@ -1,0 +1,60 @@
+# Deploys a static site
+name: Deploy Site
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to deploy"
+        required: true
+        default: "main"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || github.ref }}
+
+      - name: Setup static site builder (e.g. Quarto)
+        uses: quarto-dev/quarto-actions/setup@v2
+        # with:
+
+      - name: Build static site files
+        uses: quarto-dev/quarto-actions/render@v2
+
+      - name: Send static files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ vars.DROPLET_IP }}
+          username: webadmin
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: ./_site/ # This is the default build directory for Quarto
+          target: sites/${{ vars.SITE_NAME }}/static/
+          strip_components: 1
+          overwrite: true
+
+      - name: Update frontend files on server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ vars.DROPLET_IP }}
+          username: webadmin
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # Note: This script is present on the server from the webserver setup
+          script: |
+            ./scripts/webserver-update-static-files.sh
