@@ -48,60 +48,60 @@ tasks:
       # Set up the droplet with some basic configuration
       - task: setup-config
         vars:
-          DROPLET_NAME: "{{.DROPLET_NAME}}"
+          SSH_NAME: "{{.DROPLET_NAME}}"
 
       # Install some useful tools
       - task: setup-docker
         vars:
-          DROPLET_NAME: "{{.DROPLET_NAME}}"
+          SSH_NAME: "{{.DROPLET_NAME}}"
 
   setup-config:
-    desc: "Set up various other configuration tasks on a droplet"
+    desc: "Set up various other configuration tasks on a vps"
     requires:
-      vars: [DROPLET_NAME]
+      vars: [SSH_NAME]
     cmds:
-      - ssh {{ .DROPLET_NAME }} < scripts/setup-droplet-config.sh
+      - ssh {{ .SSH_NAME }} < scripts/setup-droplet-config.sh
 
   setup-docker:
-    desc: "Set up docker on a droplet"
+    desc: "Set up docker on a vps"
     requires:
-      vars: [DROPLET_NAME]
+      vars: [SSH_NAME]
     cmds:
-      - ssh {{.DROPLET_NAME}} < scripts/setup-docker.sh
+      - ssh {{.SSH_NAME}} < scripts/setup-docker.sh
 
   setup-webserver:
-    desc: "One-time setup to make the droplet a webserver"
+    desc: "One-time setup to make the vps a webserver"
     requires:
-      vars: [DROPLET_NAME]
+      vars: [SSH_NAME]
     cmds:
-      - scripts/send-webserver-config.sh {{.DROPLET_NAME}}
-      - ssh {{.DROPLET_NAME}} < scripts/setup-webserver.sh
+      - scripts/send-webserver-config.sh {{.SSH_NAME}}
+      - ssh {{.SSH_NAME}} < scripts/setup-webserver.sh
       # Move the update static files to webserver for convenience in e.g. GHA scripts
-      - scp scripts/webserver-update-static-files.sh {{.DROPLET_NAME}}:~/scripts/webserver-update-static-files.sh
+      - scp scripts/webserver-update-static-files.sh {{.SSH_NAME}}:~/scripts/webserver-update-static-files.sh
       - |
         echo 'Note: If the compose.yaml file includes backend services, it may be necessary to log in to the docker registry first.
 
         Do so by
-        ssh {{.DROPLET_NAME}} "echo $GH_PAT | docker login ghcr.io -u <username> --password-stdin"
+        ssh {{.SSH_NAME}} "echo $GH_PAT | docker login ghcr.io -u <username> --password-stdin"
         Where GH_PAT is a classic personal access token with read:packages scope'
       - |
         echo "Note: To add ssh keys (e.g. for GHA workflows) use the task `droplet:add-ssh-key`"
 
   add-ssh-key:
     desc: |
-      Generate a new SSH key pair, add the public key to known hosts on the droplet, and copy the private key to clipboard.
+      Generate a new SSH key pair, add the public key to known hosts on the vps, and copy the private key to clipboard.
       Useful for setting up ssh keys on github actions etc.
 
     requires:
-      vars: [DROPLET_NAME]
+      vars: [SSH_NAME]
     vars:
-      DROPLET_NAME: '{{default "webserver" .DROPLET_NAME}}'
+      SSH_NAME: '{{default "webserver" .SSH_NAME}}'
     cmds:
       # Generate a new SSH key pair without a passphrase
       - ssh-keygen -f /tmp/temp_ssh_key -N ""
       - defer: rm /tmp/temp_ssh_key /tmp/temp_ssh_key.pub
 
-      - ssh {{ .DROPLET_NAME }} "echo $(cat /tmp/temp_ssh_key.pub) >> ~/.ssh/authorized_keys"
+      - ssh {{ .SSH_NAME }} "echo $(cat /tmp/temp_ssh_key.pub) >> ~/.ssh/authorized_keys"
       # Copy the private key to the clipboard
       - xsel --clipboard < /tmp/temp_ssh_key
       # Print the private key to the console (for manual copying)
