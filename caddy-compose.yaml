@@ -1,5 +1,9 @@
 # This is the compose file the Caddy container will use
 
+volumes:
+  caddy_data:
+  caddy_config:
+
 services:
   caddy:
     image: caddy:latest
@@ -25,7 +29,3 @@ services:
   #   container_name: <site-name>_backend
   #   restart: unless-stopped
   #   env_file: "sites/<site-name>/.env"
-
-volumes:
-  caddy_data:
-  caddy_config:
