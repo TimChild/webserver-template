@@ -29,8 +29,6 @@ tasks:
       - |
         echo "Initializing new static site on droplet {{.SSH_NAME}}:sites/{{.SITE_NAME}}"
       - scripts/setup-webserver-new-static-site.sh "{{.SSH_NAME}}" "{{.SITE_NAME}}" "{{.DOMAIN}}"
-      - echo "C
-      #
 
   deploy-static:
     desc: "Deploy website (static files) to droplet (requires STATIC_DIR and SITE_NAME)"
