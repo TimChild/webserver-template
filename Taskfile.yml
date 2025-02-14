@@ -18,22 +18,26 @@ tasks:
       - echo "Creating new reveal.js presentation in {{.USER_WORKING_DIR}}/{{.SUBDIR}}"
       - scripts/new-revealjs.sh "{{.TASKFILE_DIR}}/revealjs-template" "{{.USER_WORKING_DIR}}" "{{.SUBDIR}}"
 
-  init-new-static-site:
-    desc: "Initialize a new static site on the webserver droplet"
+  new-static-site:
+    desc: "Initialize a new static site on the webserver droplet (requires SITE_NAME, optional DOMAIN to create a new caddy config from template)"
     requires:
-      vars: [DROPLET_NAME, SITE_NAME]
+      vars: [SSH_NAME, SITE_NAME]
+    vars:
+      SSH_NAME: '{{default "webserver" .SSH_NAME}}'
+      DOMAIN: '{{default "" .DOMAIN}}'
     cmds:
       - |
-        echo "Initializing new static site on droplet {{.DROPLET_NAME}}:srv/www/{{.SITE_NAME}}"
-      - scripts/setup-webserver-new-static-site.sh "{{.DROPLET_NAME}}" "{{.SITE_NAME}}"
+        echo "Initializing new static site on droplet {{.SSH_NAME}}:sites/{{.SITE_NAME}}"
+      - scripts/setup-webserver-new-static-site.sh "{{.SSH_NAME}}" "{{.SITE_NAME}}" "{{.DOMAIN}}"
+      - echo "C
       #
 
   deploy-static:
     desc: "Deploy website (static files) to droplet (requires STATIC_DIR and SITE_NAME)"
     requires:
-      vars: [DROPLET_NAME, SITE_NAME]
+      vars: [SSH_NAME, SITE_NAME]
     vars:
-      DROPLET_NAME: '{{default "webserver" .DROPLET_NAME}}'
+      SSH_NAME: '{{default "webserver" .SSH_NAME}}'
       STATIC_DIR: '{{default "static" .STATIC_DIR}}'
       ROOT_DIR: "{{default .USER_WORKING_DIR .ROOT_DIR}}"
       _FULL_DIR: "{{.ROOT_DIR}}/{{.STATIC_DIR}}/"
@@ -44,35 +48,37 @@ tasks:
           (or run from different dir or explicitly set ROOT_DIR))
     cmds:
       - |
-        echo "Deploying static files from {{._FULL_DIR}} to droplet {{.DROPLET_NAME}}:srv/www/{{.SITE_NAME}}"
+        echo "Deploying static files from {{._FULL_DIR}} to server at {{.SSH_NAME}}:srv/www/{{.SITE_NAME}}"
       # First copy to the webserver user directory
-      - rsync -avz --delete {{._FULL_DIR}}/ {{.DROPLET_NAME}}:sites/{{.SITE_NAME}}/static/
+      - rsync -avz --delete {{._FULL_DIR}}/ {{.SSH_NAME}}:sites/{{.SITE_NAME}}/static/
       - task: caddy-reload
         vars:
-          DROPLET_NAME: "{{.DROPLET_NAME}}"
+          SSH_NAME: "{{.SSH_NAME}}"
 
   caddy-reload:
     desc: "Reload the Caddy webserver after sending any configuration changes"
     requires:
-      vars: [DROPLET_NAME]
+      vars: [SSH_NAME]
+    vars:
+      SSH_NAME: '{{default "webserver" .SSH_NAME}}'
     cmds:
-      - scripts/send-webserver-config.sh "{{.DROPLET_NAME}}"
-      - ssh {{.DROPLET_NAME}} < scripts/webserver-update-static-files.sh
+      - scripts/send-webserver-config.sh "{{.SSH_NAME}}"
+      - ssh {{.SSH_NAME}} < scripts/webserver-update-static-files.sh
       # Do a quick caddy reload (sufficient for minor changes) (or start if no services running)
       # NOTE: May require logging into container repos first via `echo $GH_PAT | docker login -u <username> ghcr.io --password-stdin`
-      - ssh {{.DROPLET_NAME}} "docker exec caddy caddy reload --config /etc/caddy/Caddyfile || docker compose -f caddy-compose.yaml up -d"
+      - ssh {{.SSH_NAME}} "docker exec caddy caddy reload --config /etc/caddy/Caddyfile || docker compose -f caddy-compose.yaml up -d"
       - task: _caddy-restart-compose-if-changed
         vars:
-          DROPLET_NAME: "{{.DROPLET_NAME}}"
+          SSH_NAME: "{{.SSH_NAME}}"
 
   _caddy-restart-compose-if-changed:
     silent: true
     internal: true
     desc: "Fully restarts the docker compose services if the compose file has changed (locally)"
     requires:
-      vars: [DROPLET_NAME]
+      vars: [SSH_NAME]
     sources:
       - caddy-compose.yaml
     cmds:
       # Fully stop and start in case any changes made to compose file
-      - ssh {{.DROPLET_NAME}} "docker compose -f caddy-compose.yaml down && docker compose -f caddy-compose.yaml up -d"
+      - ssh {{.SSH_NAME}} "docker compose -f caddy-compose.yaml down && docker compose -f caddy-compose.yaml up -d"
