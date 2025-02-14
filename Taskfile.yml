@@ -19,7 +19,11 @@ tasks:
       - scripts/new-revealjs.sh "{{.TASKFILE_DIR}}/revealjs-template" "{{.USER_WORKING_DIR}}" "{{.SUBDIR}}"
 
   new-static-site:
-    desc: "Initialize a new static site on the webserver droplet (requires SITE_NAME, optional DOMAIN to create a new caddy config from template)"
+    desc: |
+      Initialize a new static site on the webserver droplet. 
+      Requires:
+        - SITE_NAME
+        - optional DOMAIN (to create a new caddy config from template)
     requires:
       vars: [SSH_NAME, SITE_NAME]
     vars:
@@ -30,13 +34,30 @@ tasks:
         echo "Initializing new static site on droplet {{.SSH_NAME}}:sites/{{.SITE_NAME}}"
       - scripts/setup-webserver-new-static-site.sh "{{.SSH_NAME}}" "{{.SITE_NAME}}" "{{.DOMAIN}}"
 
+  new-backend-site:
+    desc: |
+      Initialize a new site that also runs a backend service.
+      Requires:
+        - SITE_NAME: The name of the site (used for directory and caddy config)
+        - DOMAIN: The domain name to use for the site
+        - BACKEND_IMAGE: The name of the backend image to use (e.g. ghcr.io/<username>/<image>:latest)
+    requires:
+      vars: [SSH_NAME, SITE_NAME, BACKEND_IMAGE]
+    vars:
+      SSH_NAME: '{{default "webserver" .SSH_NAME}}'
+      DOMAIN: '{{default "" .DOMAIN}}'
+    cmds:
+      - |
+        echo "Initializing new backend site on droplet {{.SSH_NAME}}:sites/{{.SITE_NAME}}"
+      - scripts/setup-webserver-new-backend-site.sh "{{.SSH_NAME}}" "{{.SITE_NAME}}" "{{.BACKEND_IMAGE}}" "{{.DOMAIN}}"
+
   remove-site:
     desc: "Remove a site from the webserver droplet (requires SITE_NAME)"
     prompt: 'Are you sure you want to remove site ''{{.SITE_NAME}}'' from the server "{{.SSH_NAME}}?"'
     requires:
       vars: [SSH_NAME, SITE_NAME]
     cmds:
-      - ssh {{.SSH_NAME}} 'bash -s' < scripts/remove-webserver-site.sh "{{.SITE_NAME}}"
+      - ssh {{.SSH_NAME}} 'bash -s' < scripts/webserver-remove-site.sh "{{.SITE_NAME}}"
       - echo "Removing the local site configuration"
       - rm -rf "{{.TASKFILE_DIR}}/sites-enabled/{{.SITE_NAME}}.caddy"
 
