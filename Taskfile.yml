@@ -30,6 +30,14 @@ tasks:
         echo "Initializing new static site on droplet {{.SSH_NAME}}:sites/{{.SITE_NAME}}"
       - scripts/setup-webserver-new-static-site.sh "{{.SSH_NAME}}" "{{.SITE_NAME}}" "{{.DOMAIN}}"
 
+  remove-site:
+    desc: "Remove a site from the webserver droplet (requires SITE_NAME)"
+    prompt: 'Are you sure you want to remove site ''{{.SITE_NAME}}'' from the server "{{.SSH_NAME}}?"'
+    requires:
+      vars: [SSH_NAME, SITE_NAME]
+    cmds:
+      - scripts/remove-webserver-site.sh "{{.SSH_NAME}}" "{{.SITE_NAME}}"
+
   deploy-static:
     desc: "Deploy website (static files) to droplet (requires STATIC_DIR and SITE_NAME)"
     requires:
