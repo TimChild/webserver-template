@@ -67,6 +67,7 @@ tasks:
 
   _caddy-restart-compose-if-changed:
     silent: true
+    internal: true
     desc: "Fully restarts the docker compose services if the compose file has changed (locally)"
     requires:
       vars: [DROPLET_NAME]
