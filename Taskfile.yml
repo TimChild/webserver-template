@@ -36,7 +36,9 @@ tasks:
     requires:
       vars: [SSH_NAME, SITE_NAME]
     cmds:
-      - scripts/remove-webserver-site.sh "{{.SSH_NAME}}" "{{.SITE_NAME}}"
+      - ssh {{.SSH_NAME}} 'bash -s' < scripts/remove-webserver-site.sh "{{.SITE_NAME}}"
+      - echo "Removing the local site configuration"
+      - rm -rf "{{.TASKFILE_DIR}}/sites-enabled/{{.SITE_NAME}}.caddy"
 
   deploy-static:
     desc: "Deploy website (static files) to droplet (requires STATIC_DIR and SITE_NAME)"
@@ -69,7 +71,7 @@ tasks:
       SSH_NAME: '{{default "webserver" .SSH_NAME}}'
     cmds:
       - scripts/send-webserver-config.sh "{{.SSH_NAME}}"
-      - ssh {{.SSH_NAME}} < scripts/webserver-update-static-files.sh
+      - ssh {{.SSH_NAME}} "bash -s " < scripts/webserver-update-static-files.sh
       # Do a quick caddy reload (sufficient for minor changes) (or start if no services running)
       # NOTE: May require logging into container repos first via `echo $GH_PAT | docker login -u <username> ghcr.io --password-stdin`
       - ssh {{.SSH_NAME}} "docker exec caddy caddy reload --config /etc/caddy/Caddyfile || docker compose -f caddy-compose.yaml up -d"
