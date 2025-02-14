@@ -4,10 +4,10 @@
 # Any global config could go here
 
 ## Uncomment the following to use the Let's Encrypt staging server (avoid rate limits when initially setting things up)
-# {
-#     # Use the staging letencrypt server instead
-#     acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
-# }
+{
+    # Use the staging letencrypt server instead
+    acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
 
 # Import all additional configs from sites-enabled
 import sites-enabled/*.caddy
