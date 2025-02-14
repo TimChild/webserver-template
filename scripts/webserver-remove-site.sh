@@ -33,22 +33,22 @@ fi
 heading "Removing site ($site_name)"
 
 # Check that the site does not already exist on the webserver (where it is actually served)
-if "[ ! -d /srv/www/$site_name ]"; then
+if [ ! -d "/srv/www/$site_name" ]; then
     warning "/srv/www/$site_name does not exists on the webserver"
 else
-    ssh $ssh_name "sudo rm -rf /srv/www/$site_name"
+    sudo rm -rf /srv/www/$site_name
 fi
 
-if "[ ! -d ~/sites/$site_name ]"; then
+if [ ! -d "~/sites/$site_name" ]; then
     warning "~/sites/$site_name does not exists on the webserver"
 else
-    ssh $ssh_name "rm -rf ~/sites/$site_name"
+    rm -rf ~/sites/$site_name
 fi
 
-if "[ ! -f ~/sites-enabled/$site_name.caddy ]"; then
+if [ ! -f "~/sites-enabled/$site_name.caddy" ]; then
     warning "~/sites-enabled/$site_name.caddy does not exists on the webserver"
 else
-    ssh $ssh_name "rm -f ~/sites-enabled/$site_name.caddy"
+    rm -f ~/sites-enabled/$site_name.caddy
 fi
 
 echo "Reloading caddy..."
