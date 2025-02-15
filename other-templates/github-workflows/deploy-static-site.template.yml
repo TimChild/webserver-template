@@ -23,9 +23,6 @@ jobs:
       name: production
     permissions:
       contents: read
-    env:
-      # Set UV to install to the system python
-      UV_SYSTEM_PYTHON: 1
 
     steps:
       - name: Check variables set
@@ -52,18 +49,8 @@ jobs:
       - name: Setup static site builder (e.g. Quarto)
         uses: quarto-dev/quarto-actions/setup@v2
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-
-      - name: Install dependencies and activate virtual environment
-        run: uv pip install jupyter
+      # NOTE: you may need to install python or R dependencies here (that will depend on how the project is setup)
+      # E.g., Make sure QUARTO_PYTHON points to a python with jupyter, pandas, plotly, etc. installed.
 
       - name: Build static site files
         uses: quarto-dev/quarto-actions/render@v2
