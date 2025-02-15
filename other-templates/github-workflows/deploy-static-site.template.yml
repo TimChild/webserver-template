@@ -25,6 +25,22 @@ jobs:
       contents: read
 
     steps:
+      - name: Check variables set
+        # Make it easier to see when environment setup is incorrect
+        run: |
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "SSH_PRIVATE_KEY is not set"
+            exit 1
+          fi
+          if [ -z "${{ vars.DROPLET_IP }}" ]; then
+            echo "DROPLET_IP is not set"
+            exit 1
+          fi
+          if [ -z "${{ vars.SITE_NAME }}" ]; then
+            echo "SITE_NAME is not set"
+            exit 1
+          fi
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:

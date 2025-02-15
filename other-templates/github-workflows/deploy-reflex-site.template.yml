@@ -25,6 +25,34 @@ jobs:
       contents: read
 
     steps:
+      - name: Check variables set
+        # Make it easier to see when environment setup is incorrect
+        run: |
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "SSH_PRIVATE_KEY is not set"
+            exit 1
+          fi
+          if [ -z "${{ vars.DROPLET_IP }}" ]; then
+            echo "DROPLET_IP is not set"
+            exit 1
+          fi
+          if [ -z "${{ vars.SITE_NAME }}" ]; then
+            echo "SITE_NAME is not set"
+            exit 1
+          fi
+          if [ -z "${{ vars.DOMAIN }}" ]; then
+            echo "DOMAIN is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.RECAPTCHA_SITE_KEY }}" ]; then
+            echo "RECAPTCHA_SITE_KEY is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.RECAPTCHA_SECRET_KEY }}" ]; then
+            echo "RECAPTCHA_SECRET_KEY is not set"
+            exit 1
+          fi
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -41,11 +69,6 @@ jobs:
           echo "DOMAIN=${{ vars.DOMAIN }}" >> .env
           echo "RECAPTCHA_SITE_KEY=${{ secrets.RECAPTCHA_SITE_KEY }}" >> .env
           echo "RECAPTCHA_SECRET_KEY=${{ secrets.RECAPTCHA_SECRET_KEY }}" >> .env
-
-      - name: Create directories
-        run: |
-          mkdir -p "tmp_frontend_zip"
-          mkdir -p "site"
 
       - name: Build frontend
         run: |
