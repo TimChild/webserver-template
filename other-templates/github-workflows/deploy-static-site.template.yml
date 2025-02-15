@@ -77,7 +77,7 @@ jobs:
           port: 22
           source: ./_site/ # This is the default build directory for Quarto
           target: sites/${{ vars.SITE_NAME }}/static/
-          strip_components: 1
+          strip_components: 2
           overwrite: true
 
       - name: Update frontend files on server
