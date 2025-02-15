@@ -87,6 +87,13 @@ tasks:
 
   deploy-static:
     desc: "Deploy website (static files) to droplet (requires STATIC_DIR and SITE_NAME)"
+    summary: |
+      Deploy static files to the webserver droplet. 
+      Vars:
+        - SSH_NAME: The name of the droplet to deploy to (default "webserver")
+        - SITE_NAME: The name of the site to deploy
+        - optional STATIC_DIR: The directory containing the static files (default static)
+        - optional PROJECT_DIR: The root directory for the site (default user working directory)
     requires:
       vars: [SSH_NAME, SITE_NAME]
     vars:
