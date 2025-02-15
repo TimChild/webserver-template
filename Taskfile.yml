@@ -34,6 +34,7 @@ tasks:
       SUBDIR: '{{default "" .SUBDIR}}'
     prerequisites:
       - test -d "{{.TASKFILE_DIR}}/revealjs-template"
+    dir: "{{.TASKFILE_DIR}}" # Otherwise uses parent taskfile dir
     cmds:
       - echo "Creating new reveal.js presentation in {{.USER_WORKING_DIR}}/{{.SUBDIR}}"
       - scripts/new-revealjs.sh "{{.TASKFILE_DIR}}/revealjs-template" "{{.USER_WORKING_DIR}}" "{{.SUBDIR}}"
@@ -49,6 +50,7 @@ tasks:
     vars:
       SSH_NAME: '{{default "webserver" .SSH_NAME}}'
       DOMAIN: '{{default "" .DOMAIN}}'
+    dir: "{{.TASKFILE_DIR}}" # Otherwise uses parent taskfile dir
     cmds:
       - |
         echo "Initializing new static site on droplet {{.SSH_NAME}}:sites/{{.SITE_NAME}}"
@@ -66,6 +68,7 @@ tasks:
     vars:
       SSH_NAME: '{{default "webserver" .SSH_NAME}}'
       DOMAIN: '{{default "" .DOMAIN}}'
+    dir: "{{.TASKFILE_DIR}}" # Otherwise uses parent taskfile dir
     cmds:
       - |
         echo "Initializing new backend site on droplet {{.SSH_NAME}}:sites/{{.SITE_NAME}}"
@@ -76,6 +79,7 @@ tasks:
     prompt: 'Are you sure you want to remove site ''{{.SITE_NAME}}'' from the server "{{.SSH_NAME}}?"'
     requires:
       vars: [SSH_NAME, SITE_NAME]
+    dir: "{{.TASKFILE_DIR}}" # Otherwise uses parent taskfile dir
     cmds:
       - ssh {{.SSH_NAME}} 'bash -s' < scripts/webserver-remove-site.sh "{{.SITE_NAME}}"
       - echo "Removing the local site configuration"
@@ -139,6 +143,7 @@ tasks:
       vars: [SSH_NAME]
     vars:
       SSH_NAME: '{{default "webserver" .SSH_NAME}}'
+    dir: "{{.TASKFILE_DIR}}" # Otherwise uses parent taskfile dir
     cmds:
       - scripts/send-webserver-config.sh "{{.SSH_NAME}}"
       - ssh {{.SSH_NAME}} "bash -s " < scripts/webserver-update-static-files.sh
