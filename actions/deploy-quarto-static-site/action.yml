@@ -88,7 +88,7 @@ runs:
       with:
         host: ${{ inputs.vps-ip }}
         username: ${{ inputs.ssh-user }}
-        key: ${{ secrets.ssh-private-key }}
+        key: ${{ inputs.ssh-private-key }}
         port: 22
         source: ./_site/ # This is the default build directory for Quarto
         target: sites/${{ inputs.site-name }}/static/
@@ -100,7 +100,7 @@ runs:
       with:
         host: ${{ inputs.vps-ip }}
         username: ${{ inputs.ssh-user }}
-        key: ${{ secrets.ssh-private-key }}
+        key: ${{ inputs.ssh-private-key }}
         # Note: This script is present on the server from the webserver setup
         script: |
           ./scripts/webserver-update-static-files.sh
