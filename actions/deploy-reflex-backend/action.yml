@@ -33,6 +33,11 @@ inputs:
     description: "The private ssh key that grants access to the VPS"
     required: true
     type: string
+  dockerfile-name:
+    description: "The name of the Dockerfile to use for building the image"
+    required: false
+    default: "Dockerfile"
+    type: string
 
 runs:
   using: "composite"
@@ -80,7 +85,7 @@ runs:
       uses: docker/build-push-action@v5
       with:
         context: .
-        file: backend.Dockerfile
+        file: ${{ inputs.dockerfile-name }}
         push: true
         tags: ghcr.io/${{ env.OWNER_LC }}/${{ inputs.site-name }}-backend:latest
 
