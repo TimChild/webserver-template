@@ -48,6 +48,12 @@ runs:
           exit 1
         fi
 
+    - name: Temp debugging
+      shell: bash
+      run: |
+        ls -la
+        cat .env
+
     - name: Checkout code
       uses: actions/checkout@v4
       with:
