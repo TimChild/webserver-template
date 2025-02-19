@@ -98,7 +98,7 @@ runs:
         key: ${{ inputs.ssh-private-key }}
         port: 22
         source: ${{ inputs.dotenv-path }}
-        target: sites/${{ inputs.site-name }}/.env
+        target: sites/${{ inputs.site-name }}/
         overwrite: true
 
     - name: Set .env permissions
