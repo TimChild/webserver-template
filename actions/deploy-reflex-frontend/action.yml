@@ -19,7 +19,7 @@ inputs:
     required: true
     type: string
   ssh-user:
-    description: "The user to connect to the VPS as (defaults to '${{ inputs.ssh-user }}')"
+    description: "The user to connect to the VPS as (defaults to 'webadmin')"
     default: "webadmin"
     required: false
     type: string
