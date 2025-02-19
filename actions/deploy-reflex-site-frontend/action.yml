@@ -1,0 +1,91 @@
+# Deploys a reflex site frontend
+#
+# uses: TimChild/webserver-template/actions/deploy-reflex-site-frontend@main
+# with:
+#   vps-ip: ${{ vars.DROPLET_IP }}
+#   ...
+#
+name: "Deploy Reflex Site Frontend"
+description: "Deploys a reflex site frontend to a VPS (set up as a webserver based on TimChild/webserver-template)"
+author: "Tim Child"
+
+inputs:
+  vps-ip:
+    description: "The IP address of the VPS that is set up as a webserver"
+    required: true
+    type: string
+  site-name:
+    description: "The name of the site to deploy (same as when initializing the site, usually a single word)"
+    required: true
+    type: string
+  ssh-user:
+    description: "The user to connect to the VPS as (defaults to '${{ inputs.ssh-user }}')"
+    default: "${{ inputs.ssh-user }}"
+    required: false
+    type: string
+  ssh-private-key:
+    description: "The private ssh key that grants access to the VPS"
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check variables set
+      # Make it easier to see when environment setup is incorrect
+      shell: bash
+      run: |
+        if [ -z "${{ inputs.ssh-private-key }}" ]; then
+          echo "ssh-private-key is not set"
+          exit 1
+        fi
+        if [ -z "${{ inputs.vps-ip }}" ]; then
+          echo "vps-ip is not set"
+          exit 1
+        fi
+        if [ -z "${{ inputs.site-name }}" ]; then
+          echo "site-name is not set"
+          exit 1
+        fi
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.ref }}
+
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        version: "0.6.x"
+
+    - name: Build frontend
+      shell: bash
+      run: |
+        mkdir -p "tmp_frontend_zip"
+        mkdir -p "site"
+        uv run reflex export --frontend-only --zip-dest-dir "tmp_frontend_zip"
+        unzip -q tmp_frontend_zip/frontend.zip -d site/
+        rm -r "tmp_frontend_zip"
+
+    - name: Send frontend static files
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ inputs.vps-ip }}
+        username: ${{ inputs.ssh-user }}
+        key: ${{ inputs.ssh-private-key }}
+        port: 22
+        source: ./site/
+        target: sites/${{ vars.site-name }}/static/
+        strip_components: 2
+        overwrite: true
+
+    - name: Update frontend files on server
+      uses: appleboy/ssh-action@v1.2.0
+      with:
+        host: ${{ inputs.vps-ip }}
+        username: ${{ inputs.ssh-user }}
+        key: ${{ inputs.ssh-private-key }}
+        # Note: This script is present on the server from the webserver setup
+        shell: bash
+        script: |
+          ./scripts/webserver-update-static-files.sh

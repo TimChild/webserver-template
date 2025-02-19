@@ -1,0 +1,119 @@
+# Deploys a reflex site backend
+#
+# uses: TimChild/webserver-template/actions/deploy-reflex-site-backend@main
+# with:
+#   vps-ip: ${{ vars.DROPLET_IP }}
+#   ...
+#
+
+name: "Deploy Reflex Site Backend"
+description: "Deploys a reflex site backend to a VPS (set up as a webserver based on TimChild/webserver-template)"
+author: "Tim Child"
+
+inputs:
+  vps-ip:
+    description: "The IP address of the VPS that is set up as a webserver"
+    required: true
+    type: string
+  site-name:
+    description: "The name of the site to deploy (same as when initializing the site, usually a single word)"
+    required: true
+    type: string
+  ssh-user:
+    description: "The user to connect to the VPS as (defaults to '${{ inputs.ssh-user }}')"
+    default: "${{ inputs.ssh-user }}"
+    required: false
+    type: string
+  dotenv-path:
+    description: "Path to .env file (can be created during workflow) that will be sent to the server for the backend"
+    default: ".env"
+    required: true
+    type: string
+  ssh-private-key:
+    description: "The private ssh key that grants access to the VPS"
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check variables set
+      # Make it easier to see when environment setup is incorrect
+      shell: bash
+      run: |
+        if [ -z "${{ secrets.ssh-private-key }}" ]; then
+          echo "ssh-private-key is not set"
+          exit 1
+        fi
+        if [ -z "${{ inputs.vps-ip }}" ]; then
+          echo "vps-ip is not set"
+          exit 1
+        fi
+        if [ -z "${{ inputs.site-name }}" ]; then
+          echo "site-name is not set"
+          exit 1
+        fi
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.ref }}
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set lower case owner name
+      shell: bash
+      run: |
+        echo "OWNER_LC=${OWNER,,}" >>${GITHUB_ENV}
+      env:
+        OWNER: "${{ github.repository_owner }}"
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: backend.Dockerfile
+        push: true
+        tags: ghcr.io/${{ env.OWNER_LC }}/${{ vars.site-name }}-backend:latest
+
+    - name: Send .env file to server
+      if: ${{ inputs.dotenv-path != "" }}
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ inputs.vps-ip }}
+        username: ${{ inputs.ssh-user }}
+        key: ${{ secrets.ssh-private-key }}
+        port: 22
+        source: ${{ inputs.dotenv-path }}
+        target: sites/${{ vars.site-name }}/.env
+        overwrite: true
+
+    - name: Set .env permissions
+      if: ${{ inputs.dotenv-path != "" }}
+      uses: appleboy/ssh-action@v1.2.0
+      with:
+        host: ${{ inputs.vps-ip }}
+        username: ${{ inputs.ssh-user }}
+        key: ${{ secrets.ssh-private-key }}
+        script: |
+          chmod 600 sites/${{ vars.site-name }}/.env
+
+    - name: Pull new backend image on server and restart updated container
+      uses: appleboy/ssh-action@v1.2.0
+      with:
+        host: ${{ inputs.vps-ip }}
+        username: ${{ inputs.ssh-user }}
+        key: ${{ secrets.ssh-private-key }}
+        script: |
+          # Log in to GitHub Container Registry
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin && \
+          docker pull ghcr.io/${{ env.OWNER_LC }}/${{ vars.site-name }}-backend:latest && \
+          docker compose up -d
