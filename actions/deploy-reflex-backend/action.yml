@@ -85,7 +85,7 @@ runs:
         tags: ghcr.io/${{ env.OWNER_LC }}/${{ inputs.site-name }}-backend:latest
 
     - name: Send .env file to server
-      if: ${{ inputs.dotenv-path != "" }}
+      if: ${{ inputs.dotenv-path }} != ""
       uses: appleboy/scp-action@v0.1.7
       with:
         host: ${{ inputs.vps-ip }}
@@ -97,7 +97,7 @@ runs:
         overwrite: true
 
     - name: Set .env permissions
-      if: ${{ inputs.dotenv-path != "" }}
+      if: ${{ inputs.dotenv-path }} != ""
       uses: appleboy/ssh-action@v1.2.0
       with:
         host: ${{ inputs.vps-ip }}
