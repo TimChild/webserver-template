@@ -30,6 +30,7 @@ runs:
   steps:
     - name: Check variables set
       # Make it easier to see when environment setup is incorrect
+      shell: bash
       run: |
         if [ -z "${{ inputs.ssh-private-key }}" ]; then
           echo "ssh-private-key is not set"
@@ -67,6 +68,7 @@ runs:
         python-version-file: "pyproject.toml"
 
     - name: Install dependencies and activate virtual environment
+      shell: bash
       run: uv sync
 
     ### Install R dependencies (to run any R for generating quarto content)
