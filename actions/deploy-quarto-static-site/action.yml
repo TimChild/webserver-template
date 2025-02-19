@@ -56,25 +56,27 @@ runs:
     ### Install Python dependencies (to run any python for generating quarto content)
     # Note: assumes using `uv` for dependency management
     - name: Install uv
-      if: ${{ inputs.uses-python }}
+      if: ${{ inputs.uses-python == 'true' }}
       uses: astral-sh/setup-uv@v5
       with:
         enable-cache: true
         version: "0.6.x"
 
     - name: Setup Python
+      if: ${{ inputs.uses-python == 'true' }}
       uses: actions/setup-python@v5 # Use official because GH caches it
       with:
         python-version-file: "pyproject.toml"
 
     - name: Install dependencies and activate virtual environment
+      if: ${{ inputs.uses-python == 'true' }}
       shell: bash
       run: uv sync
 
     ### Install R dependencies (to run any R for generating quarto content)
     # Note: This is untested (I don't use R, so don't know if this is correct)
     - name: Setup R
-      if: ${{ inputs.uses-r }}
+      if: ${{ inputs.uses-r == 'true' }}
       uses: r-lib/actions/setup-r@v2
     ############
 
