@@ -91,7 +91,6 @@ tasks:
     desc: |
       Generate a new SSH key pair, add the public key to known hosts on the vps, and copy the private key to clipboard.
       Useful for setting up ssh keys on github actions etc.
-
     requires:
       vars: [SSH_NAME]
     vars:
