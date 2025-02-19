@@ -73,6 +73,12 @@ runs:
         unzip -q tmp_frontend_zip/frontend.zip -d site/
         rm -r "tmp_frontend_zip"
 
+    - name: Temp debugging
+      shell: bash
+      run: |
+        echo "ssh-user is: ${{ inputs.ssh-user }}"
+        echo "ssh-private-key is: ${{ inputs.ssh-private-key }}"
+
     - name: Send frontend static files
       uses: appleboy/scp-action@v0.1.7
       with:
@@ -84,12 +90,6 @@ runs:
         target: sites/${{ inputs.site-name }}/static/
         strip_components: 2
         overwrite: true
-
-    - name: Temp debugging
-      shell: bash
-      run: |
-        echo "ssh-user is: ${{ inputs.ssh-user }}"
-        echo "ssh-private-key is: ${{ inputs.ssh-private-key }}"
 
     - name: Update frontend files on server
       uses: appleboy/ssh-action@v1.2.0
