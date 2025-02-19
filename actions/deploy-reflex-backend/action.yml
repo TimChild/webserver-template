@@ -7,7 +7,7 @@
 #
 
 name: "Deploy Reflex Site Backend"
-description: "Deploys a reflex site backend to a VPS (set up as a webserver based on TimChild/webserver-template)"
+description: "Deploys a reflex site backend to a VPS (set up as a webserver based on TimChild/webserver-template) -- Requires `packages write` permission"
 author: "Tim Child"
 
 inputs:
@@ -21,7 +21,7 @@ inputs:
     type: string
   ssh-user:
     description: "The user to connect to the VPS as (defaults to '${{ inputs.ssh-user }}')"
-    default: "${{ inputs.ssh-user }}"
+    default: "webadmin"
     required: false
     type: string
   dotenv-path:
@@ -82,7 +82,7 @@ runs:
         context: .
         file: backend.Dockerfile
         push: true
-        tags: ghcr.io/${{ env.OWNER_LC }}/${{ vars.site-name }}-backend:latest
+        tags: ghcr.io/${{ env.OWNER_LC }}/${{ inputs.site-name }}-backend:latest
 
     - name: Send .env file to server
       if: ${{ inputs.dotenv-path != "" }}
@@ -93,7 +93,7 @@ runs:
         key: ${{ inputs.ssh-private-key }}
         port: 22
         source: ${{ inputs.dotenv-path }}
-        target: sites/${{ vars.site-name }}/.env
+        target: sites/${{ inputs.site-name }}/.env
         overwrite: true
 
     - name: Set .env permissions
@@ -104,7 +104,7 @@ runs:
         username: ${{ inputs.ssh-user }}
         key: ${{ inputs.ssh-private-key }}
         script: |
-          chmod 600 sites/${{ vars.site-name }}/.env
+          chmod 600 sites/${{ inputs.site-name }}/.env
 
     - name: Pull new backend image on server and restart updated container
       uses: appleboy/ssh-action@v1.2.0
@@ -115,5 +115,5 @@ runs:
         script: |
           # Log in to GitHub Container Registry
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin && \
-          docker pull ghcr.io/${{ env.OWNER_LC }}/${{ vars.site-name }}-backend:latest && \
+          docker pull ghcr.io/${{ env.OWNER_LC }}/${{ inputs.site-name }}-backend:latest && \
           docker compose up -d

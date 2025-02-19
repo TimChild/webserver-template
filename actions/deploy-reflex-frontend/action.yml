@@ -20,7 +20,7 @@ inputs:
     type: string
   ssh-user:
     description: "The user to connect to the VPS as (defaults to '${{ inputs.ssh-user }}')"
-    default: "${{ inputs.ssh-user }}"
+    default: "webadmin"
     required: false
     type: string
   ssh-private-key:
@@ -75,7 +75,7 @@ runs:
         key: ${{ inputs.ssh-private-key }}
         port: 22
         source: ./site/
-        target: sites/${{ vars.site-name }}/static/
+        target: sites/${{ inputs.site-name }}/static/
         strip_components: 2
         overwrite: true
 
