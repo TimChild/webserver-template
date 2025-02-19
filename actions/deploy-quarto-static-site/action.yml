@@ -1,6 +1,13 @@
+# Deploys a quarto static site
+#
+# uses: TimChild/webserver-template/actions/deploy-quarto-static-site@main
+# with:
+#  vps-ip: ${{ secrets.DROPLET_IP }}
+#  ...
+#
 name: "Deploy Quarto Site"
-description: "Deploys a Quarto static site to a VPS"
-author: "Your Name <your.email@example.com>"
+description: "Deploys a Quarto static site to a VPS (set up as a webserver based on TimChild/webserver-template)"
+author: "Tim Child"
 
 inputs:
   vps-ip:
