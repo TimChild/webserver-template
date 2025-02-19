@@ -85,6 +85,12 @@ runs:
         strip_components: 2
         overwrite: true
 
+    - name: Temp debugging
+      shell: bash
+      run: |
+        echo "ssh-user is: ${{ inputs.ssh-user }}"
+        echo "ssh-private-key is: ${{ inputs.ssh-private-key }}"
+
     - name: Update frontend files on server
       uses: appleboy/ssh-action@v1.2.0
       with:
