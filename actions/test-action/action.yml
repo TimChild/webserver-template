@@ -1,0 +1,64 @@
+name: "Test action"
+description: "Just for testing"
+author: "Tim Child"
+
+inputs:
+  vps-ip:
+    description: "The IP address of the VPS that is set up as a webserver"
+    required: true
+    type: string
+  site-name:
+    description: "The name of the site to deploy (same as when initializing the site, usually a single word)"
+    required: true
+    type: string
+  ssh-user:
+    description: "The user to connect to the VPS as (defaults to 'webadmin')"
+    default: "webadmin"
+    required: false
+    type: string
+  ssh-private-key:
+    description: "The private ssh key that grants access to the VPS"
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check variables set
+      shell: bash
+      run: |
+        if [ -z "${{ inputs.ssh-private-key }}" ]; then
+          echo "ssh-private-key is not set"
+          exit 1
+        fi
+        if [ -z "${{ inputs.vps-ip }}" ]; then
+          echo "vps-ip is not set"
+          exit 1
+        fi
+        if [ -z "${{ inputs.site-name }}" ]; then
+          echo "site-name is not set"
+          exit 1
+        fi
+    - name: Temp debugging
+      shell: bash
+      run: |
+        pwd
+        ls -la
+
+    - name: Create dummy file
+      shell: bash
+      run: |
+        echo "Hello, world!" > hello.txt
+        ls -la
+        cat hello.txt
+
+    - name: Send dummy file to server
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ inputs.vps-ip }}
+        username: ${{ inputs.ssh-user }}
+        key: ${{ inputs.ssh-private-key }}
+        port: 22
+        source: hello.txt
+        target: scratch
+        overwrite: true
