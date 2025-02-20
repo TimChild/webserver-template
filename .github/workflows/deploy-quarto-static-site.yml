@@ -1,7 +1,8 @@
-# Deploys a static site -- Intended to be called from another workflow e.g.
-# uses: TimChild/webserver-template/deploy-static-site@main
+# Deploys a quarto static site -- Intended to be called from another workflow e.g.
+# uses: TimChild/webserver-template/deploy-quarto-static-site@main
 # with:
-#  DROPLET_IP: ${{ secrets.DROPLET_IP }}
+#  vps-ip: ${{ secrets.DROPLET_IP }}
+#  ...
 
 name: Deploy Quarto Site
 
