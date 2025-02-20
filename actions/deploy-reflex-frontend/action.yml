@@ -63,6 +63,12 @@ runs:
       with:
         ref: ${{ github.ref }}
 
+    - name: Temp debugging
+      shell: bash
+      run: |
+        ls -la
+        cat .env
+
     - name: Set up uv
       uses: astral-sh/setup-uv@v5
       with:
