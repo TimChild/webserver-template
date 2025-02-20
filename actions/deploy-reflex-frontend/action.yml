@@ -85,6 +85,5 @@ runs:
         username: ${{ inputs.ssh-user }}
         key: ${{ inputs.ssh-private-key }}
         # Note: This script is present on the server from the webserver setup
-        shell: bash
         script: |
           ./scripts/webserver-update-static-files.sh
