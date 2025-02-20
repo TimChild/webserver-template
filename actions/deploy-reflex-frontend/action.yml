@@ -52,23 +52,6 @@ runs:
           exit 1
         fi
 
-    - name: Temp debugging
-      shell: bash
-      run: |
-        ls -la
-        cat .env
-
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        ref: ${{ github.ref }}
-
-    - name: Temp debugging
-      shell: bash
-      run: |
-        ls -la
-        cat .env
-
     - name: Set up uv
       uses: astral-sh/setup-uv@v5
       with:
@@ -82,12 +65,6 @@ runs:
         uv run reflex export --frontend-only --zip-dest-dir "tmp_frontend_zip"
         unzip -q tmp_frontend_zip/frontend.zip -d site/
         rm -r "tmp_frontend_zip"
-
-    - name: Temp debugging
-      shell: bash
-      run: |
-        echo "ssh-user is: ${{ inputs.ssh-user }}"
-        echo "ssh-private-key is: ${{ inputs.ssh-private-key }}"
 
     - name: Send frontend static files
       uses: appleboy/scp-action@v0.1.7
