@@ -55,8 +55,9 @@ runs:
     - name: Send dummy file to server
       uses: appleboy/scp-action@v0.1.7
       with:
-        host: ${{ inputs.vps-ip }}
-        username: ${{ inputs.ssh-user }}
+        # host: ${{ inputs.vps-ip }}
+        username: webadmin
+        # username: ${{ inputs.ssh-user }}
         key: ${{ inputs.ssh-private-key }}
         port: 22
         source: hello.txt
