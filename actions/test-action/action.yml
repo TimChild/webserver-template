@@ -27,6 +27,10 @@ runs:
     - name: Check variables set
       shell: bash
       run: |
+        if [ -z "${{ inputs.ssh-user }}" ]; then
+          echo "ssh-user is not set"
+          exit 1
+        fi
         if [ -z "${{ inputs.ssh-private-key }}" ]; then
           echo "ssh-private-key is not set"
           exit 1
