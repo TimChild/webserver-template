@@ -121,24 +121,24 @@ tasks:
       Vars:
         - SSH_NAME: The name of the droplet to deploy to
         - SITE_NAME: The name of the site to deploy
-        - USERNAME: The username for the docker registry
+        - DOCKER_USER: The username for the docker registry
         - optional REGISTRY: The docker registry to use (default ghcr.io)
         - optional DOCKERFILE_PATH: The path to the Dockerfile (default Dockerfile)
         - optional PROJECT_DIR: The root directory for the site (default user working directory)
     requires:
-      vars: [SSH_NAME, SITE_NAME, USERNAME]
+      vars: [SSH_NAME, SITE_NAME, DOCKER_USER]
     vars:
       REGISTRY: '{{default "ghcr.io" .REGISTRY}}'
-      USERNAME: '{{default "<set default here>" .USERNAME}}'
+      DOCKER_USER: '{{default "<set default here>" .DOCKER_USER}}'
       DOCKERFILE_PATH: '{{default "Dockerfile" .DOCKERFILE_PATH}}'
       PROJECT_DIR: "{{default .USER_WORKING_DIR .PROJECT_DIR}}"
       _FULL_DOCKERFILE_PATH: "{{.PROJECT_DIR}}/{{.DOCKERFILE_PATH}}"
-      _FULL_REGISTRY_PATH: "{{.REGISTRY}}/{{.USERNAME}}/{{.SITE_NAME}}-backend:latest"
+      _FULL_REGISTRY_PATH: "{{.REGISTRY}}/{{.DOCKER_USER}}/{{.SITE_NAME}}-backend:latest"
     cmds:
       - |
         echo "Deploying backend docker image to server at {{.SSH_NAME}}:sites/{{.SITE_NAME}}"
       - docker build -t {{._FULL_REGISTRY_PATH}} -f {{._FULL_DOCKERFILE_PATH}} {{.PROJECT_DIR}}
-      - echo "If the following command fails -- make sure you are logged in with write permissions (e.g. `echo $GH_PAT | docker login -u <username> ghcr.io --password-stdin`)"
+      - echo "If the following command fails -- make sure you are logged in with write permissions (e.g. 'echo $GH_PAT | docker login -u <username> ghcr.io --password-stdin')"
       - docker push {{._FULL_REGISTRY_PATH}}
       - task: caddy-reload
         vars:
