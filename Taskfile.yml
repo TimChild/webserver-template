@@ -5,7 +5,6 @@ version: "3"
 includes:
   droplet:
     taskfile: taskfile-droplet.yml
-    flatten: false
 
 tasks:
   add-ssh-key:
@@ -156,7 +155,7 @@ tasks:
       - ssh {{.SSH_NAME}} "bash -s " < scripts/webserver-update-static-files.sh
       # Do a quick caddy reload (sufficient for minor changes) (or start if no services running)
       # NOTE: May require logging into container repos first via `echo $GH_PAT | docker login -u <username> ghcr.io --password-stdin`
-      - ssh {{.SSH_NAME}} "docker exec caddy caddy reload --config /etc/caddy/Caddyfile || docker compose -f caddy-compose.yaml up -d"
+      - ssh {{.SSH_NAME}} "docker exec caddy caddy reload --config /etc/caddy/Caddyfile || docker compose up -d"
       - task: _caddy-restart-compose-if-changed
         vars:
           SSH_NAME: "{{.SSH_NAME}}"
@@ -171,4 +170,4 @@ tasks:
       - caddy-compose.yaml
     cmds:
       # Fully stop and start in case any changes made to compose file
-      - ssh {{.SSH_NAME}} "docker compose -f caddy-compose.yaml down && docker compose -f caddy-compose.yaml up -d"
+      - ssh {{.SSH_NAME}} "docker compose pull && docker compose down && docker compose up -d"
