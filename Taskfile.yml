@@ -160,6 +160,8 @@ tasks:
       - task: _caddy-restart-compose-if-changed
         vars:
           SSH_NAME: "{{.SSH_NAME}}"
+      # Definitely restart the compose since the image changed
+      - ssh {{.SSH_NAME}} "docker compose pull && docker compose up -d"
 
   _caddy-restart-compose-if-changed:
     silent: true
