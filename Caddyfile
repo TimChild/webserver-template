@@ -11,4 +11,3 @@
 
 # Import all additional configs from sites-enabled
 import sites-enabled/*.caddy
-
