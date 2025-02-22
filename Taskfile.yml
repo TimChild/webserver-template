@@ -138,7 +138,8 @@ tasks:
       - |
         echo "Deploying backend docker image to server at {{.SSH_NAME}}:sites/{{.SITE_NAME}}"
       - docker build -t {{._FULL_REGISTRY_PATH}} -f {{._FULL_DOCKERFILE_PATH}} {{.PROJECT_DIR}}
-      - docker push {{._FULL_REGISTRY_PATH}} || echo "Make sure you are logged in with write permissions (e.g. `echo $GH_PAT | docker login -u <username> ghcr.io --password-stdin`)"
+      - echo "If the following command fails -- make sure you are logged in with write permissions (e.g. `echo $GH_PAT | docker login -u <username> ghcr.io --password-stdin`)"
+      - docker push {{._FULL_REGISTRY_PATH}}
       - task: caddy-reload
         vars:
           SSH_NAME: "{{.SSH_NAME}}"
