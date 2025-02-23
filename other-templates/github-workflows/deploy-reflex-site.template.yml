@@ -60,7 +60,7 @@ jobs:
         permissions:
           packages: write
         with:
-          vps-ip: ${{ vars.DROPLET_IP }}
+          vps-ip: ${{ vars.VPS_IP }}
           site-name: ${{ vars.SITE_NAME }}
           dotenv-path: .env
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
