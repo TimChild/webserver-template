@@ -9,6 +9,8 @@
 # Note: excludes .git, .github, and demo.html from the copy of the reveal.js repo
 # Additionally, includes some defaults and an updated index.html that defaults to sourcing the # markdown file from content/slides.md
 
+set -e
+
 # Check arguments passed
 if [ -z "$1" ] || [ -z "$2" ]; then
   echo "Usage: $0 <template_dir> <dest_dir> [sub_dir]"
