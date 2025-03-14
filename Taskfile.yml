@@ -31,12 +31,13 @@ tasks:
     desc: "Create a new reveal.js presentation in current directory. Optionally provide SUBDIR to specify a subdirectory."
     vars:
       SUBDIR: '{{default "" .SUBDIR}}'
-    prerequisites:
-      - test -d "{{.TASKFILE_DIR}}/revealjs-template"
+      TEMPLATE_DIR: "{{.TASKFILE_DIR}}/other-templates/revealjs-template"
+    preconditions:
+      - test -d "{{.TEMPLATE_DIR}}"
     dir: "{{.TASKFILE_DIR}}" # Otherwise uses parent taskfile dir
     cmds:
       - echo "Creating new reveal.js presentation in {{.USER_WORKING_DIR}}/{{.SUBDIR}}"
-      - scripts/new-revealjs.sh "{{.TASKFILE_DIR}}/revealjs-template" "{{.USER_WORKING_DIR}}" "{{.SUBDIR}}"
+      - scripts/new-revealjs.sh "{{.TEMPLATE_DIR}}" "{{.USER_WORKING_DIR}}" "{{.SUBDIR}}"
 
   new-static-site:
     desc: |
