@@ -1,0 +1,14 @@
+
+## Ignore the files that are typically not customized (i.e. these are expected to be cloned from template)
+## Comment out any lines to track local changes
+css/
+js/
+plugin/
+.npmignore
+LICENSE
+README.md
+gulpfile.js
+# index.html
+package-lock.json
+package.json
+readme.md

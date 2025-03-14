@@ -50,7 +50,10 @@ npm audit fix --prefix "$DEST_DIR"
 npm install --prefix "$DEST_DIR"
 
 # Copy the template files to the destination directory
-rsync -aq "$TEMPLATE_DIR/" "$DEST_DIR/"
+rsync -aq "$TEMPLATE_DIR/" "$DEST_DIR/" --exclude=".gitignore-additional" --exclude="readme.md"
+
+# Extend the .gitignore file with the .gitignore-additional
+cat "$TEMPLATE_DIR/.gitignore-additional" >> "$DEST_DIR/.gitignore"
 
 echo "Edit 'content/slides.md' to change the slideshow (or modify 'index.html'). Start it by running:"
 echo "npm start --prefix $DEST_DIR"
