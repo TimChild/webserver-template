@@ -88,7 +88,7 @@ runs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
-        context: .
+        context: ${{ inputs.working-directory }}
         file: ${{ inputs.working-directory }}/${{ inputs.dockerfile-name }}
         push: true
         tags: ghcr.io/${{ env.OWNER_LC }}/${{ inputs.site-name }}-backend:latest
