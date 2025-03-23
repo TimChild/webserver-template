@@ -74,13 +74,12 @@ runs:
 
     - name: Send frontend static files
       uses: appleboy/scp-action@v0.1.7
-      working-directory: ${{ inputs.working-directory }}
       with:
         host: ${{ inputs.vps-ip }}
         username: ${{ inputs.ssh-user }}
         key: ${{ inputs.ssh-private-key }}
         port: 22
-        source: ./site/
+        source: ${{ inputs.working-directory }}/site/
         target: sites/${{ inputs.site-name }}/static/
         strip_components: 2
         overwrite: true
