@@ -36,5 +36,15 @@ echo "vm.vfs_cache_pressure=50" | sudo tee -a /etc/sysctl.conf
 sudo swapon --show
 heading "Swapfile setup complete"
 
+echo "Set automatic vacuuming of journal logs"
+vacuum_job="journalctl --vacuum=100M"
+# Once a day at 2:30am
+crontab -l | grep -q "$vacuum_job" || (crontab -l ; echo "30 2 * * * $vacuum_job") | crontab -
+
+echo "Set automatic apt cleanup"
+apt_clean_job="apt autoclean -y && apt autoremove -y"
+# Once a week on Monday at 3:30am
+crontab -l | grep -q "$apt_clean_job" || (crontab -l ; echo "30 3 * * 1 $apt_clean_job") | crontab -
+
 heading "Done setting up general configuration"
 
